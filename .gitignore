@@ -1,0 +1,12 @@
+# Ambientes Virtuais Python
+venv/
+env/
+.env
+
+# Arquivos temporários do Python e do SO
+__pycache__/
+*.pyc
+.DS_Store
+
+# Arquivos temporários do Power BI
+*~*.pbix

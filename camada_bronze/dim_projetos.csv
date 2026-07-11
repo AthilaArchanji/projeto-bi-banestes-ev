@@ -1,0 +1,21 @@
+id_projeto,municipio,tipo_local,capex,opex_mensal,qtd_carregadores,potencia_instalada_kw,status
+1,Guarapari,Estacionamento Privado,276222.29,2559.83,5,150,Em Operação
+2,São Mateus,Rodovia,353655.09,2854.54,2,100,Em Construção
+3,Cariacica,Supermercado,316640.24,2768.41,4,50,Em Operação
+4,Cachoeiro de Itapemirim,Supermercado,238708.74,3051.69,6,150,Em Operação
+5,Vitória,Rodovia,197534.69,4488.8,4,50,Em Operação
+6,Aracruz,Estacionamento Privado,384368.03,4964.63,6,100,Em Operação
+7,Serra,Rodovia,238684.22,3183.63,6,100,Em Construção
+8,Linhares,Posto de Combustível,353805.02,2085.2,6,50,Em Operação
+9,Cariacica,Shopping,207958.94,3589.23,5,150,Em Construção
+10,Serra,Posto de Combustível,417081.22,2003.36,3,150,Em Operação
+11,Linhares,Shopping,311996.41,2056.14,3,100,Em Construção
+12,Colatina,Posto de Combustível,421270.27,2850.83,3,50,Em Operação
+13,Aracruz,Posto de Combustível,351986.2,3243.72,6,100,Em Operação
+14,Vila Velha,Shopping,214846.94,2415.02,4,100,Em Operação
+15,São Mateus,Shopping,302971.14,4488.53,3,150,Em Operação
+16,Aracruz,Rodovia,238951.64,2479.54,6,50,Em Operação
+17,Cariacica,Supermercado,439711.89,3416.41,3,150,Em Operação
+18,Guarapari,Posto de Combustível,294276.53,2930.21,6,100,Em Construção
+19,Linhares,Rodovia,299151.45,2651.9,2,50,Em Operação
+20,Guarapari,Posto de Combustível,438370.93,2029.88,4,100,Em Operação
