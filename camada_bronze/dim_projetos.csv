@@ -1,21 +1,31 @@
-id_projeto,municipio,tipo_local,capex,opex_mensal,qtd_carregadores,potencia_instalada_kw,status
-1,Guarapari,Estacionamento Privado,276222.29,2559.83,5,150,Em Operação
-2,São Mateus,Rodovia,353655.09,2854.54,2,100,Em Construção
-3,Cariacica,Supermercado,316640.24,2768.41,4,50,Em Operação
-4,Cachoeiro de Itapemirim,Supermercado,238708.74,3051.69,6,150,Em Operação
-5,Vitória,Rodovia,197534.69,4488.8,4,50,Em Operação
-6,Aracruz,Estacionamento Privado,384368.03,4964.63,6,100,Em Operação
-7,Serra,Rodovia,238684.22,3183.63,6,100,Em Construção
-8,Linhares,Posto de Combustível,353805.02,2085.2,6,50,Em Operação
-9,Cariacica,Shopping,207958.94,3589.23,5,150,Em Construção
-10,Serra,Posto de Combustível,417081.22,2003.36,3,150,Em Operação
-11,Linhares,Shopping,311996.41,2056.14,3,100,Em Construção
-12,Colatina,Posto de Combustível,421270.27,2850.83,3,50,Em Operação
-13,Aracruz,Posto de Combustível,351986.2,3243.72,6,100,Em Operação
-14,Vila Velha,Shopping,214846.94,2415.02,4,100,Em Operação
-15,São Mateus,Shopping,302971.14,4488.53,3,150,Em Operação
-16,Aracruz,Rodovia,238951.64,2479.54,6,50,Em Operação
-17,Cariacica,Supermercado,439711.89,3416.41,3,150,Em Operação
-18,Guarapari,Posto de Combustível,294276.53,2930.21,6,100,Em Construção
-19,Linhares,Rodovia,299151.45,2651.9,2,50,Em Operação
-20,Guarapari,Posto de Combustível,438370.93,2029.88,4,100,Em Operação
+id_projeto,municipio,uf,tipo_local,capex,opex_mensal,qtd_carregadores,potencia_instalada_kw,status
+1,Vitória,ESPIRITO SANTO,Rodovia,223467.56,2418.61,2,150,Em Operação
+2,Linhares,ESPIRITO SANTO,Estacionamento Privado,276576.55,2089.39,3,50,Em Operação
+3,Vitória,ESPIRITO SANTO,Posto de Combustível,364805.88,4103.97,5,50,Em Operação
+4,Serra,ESPIRITO SANTO,Shopping,377642.21,2478.98,5,100,Em Operação
+5,Serra,ESPIRITO SANTO,Rodovia,180663.08,3139.78,4,100,Em Operação
+6,Marataízes,ESPIRITO SANTO,Supermercado,310868.43,4919.35,5,50,Em Operação
+7,Itapemirim,ESPIRITO SANTO,Estacionamento Privado,415635.52,3084.91,3,150,Em Operação
+8,São Mateus,ESPIRITO SANTO,Rodovia,445566.46,4565.95,2,100,Em Operação
+9,São Mateus,ESPIRITO SANTO,Rodovia,198796.23,3065.81,4,150,Em Operação
+10,São Mateus,ESPIRITO SANTO,Estacionamento Privado,340493.49,3602.42,3,50,Em Construção
+11,Serra,ESPIRITO SANTO,Estacionamento Privado,215884.55,2972.85,2,50,Em Operação
+12,Marataízes,ESPIRITO SANTO,Supermercado,230322.26,2632.95,6,150,Em Construção
+13,São Mateus,ESPIRITO SANTO,Supermercado,415404.95,3928.56,3,100,Em Operação
+14,Cachoeiro de Itapemirim,ESPIRITO SANTO,Estacionamento Privado,228822.48,3753.76,6,100,Em Operação
+15,Mimoso do Sul,ESPIRITO SANTO,Posto de Combustível,302857.89,2272.73,2,50,Em Operação
+16,Vila Velha,ESPIRITO SANTO,Supermercado,328922.71,3154.3,6,100,Em Operação
+17,João Neiva,ESPIRITO SANTO,Shopping,354085.02,2343.66,6,100,Em Operação
+18,Cariacica,ESPIRITO SANTO,Rodovia,280429.58,3361.17,4,150,Em Operação
+19,Aracruz,ESPIRITO SANTO,Shopping,411155.57,2895.33,6,150,Em Operação
+20,Cariacica,ESPIRITO SANTO,Posto de Combustível,311813.71,4335.88,6,50,Em Operação
+21,Santa Teresa,ESPIRITO SANTO,Shopping,428729.58,4636.17,4,50,Em Operação
+22,Venda Nova do Imigrante,ESPIRITO SANTO,Shopping,175696.04,3457.97,2,150,Em Operação
+23,Vila Velha,ESPIRITO SANTO,Supermercado,434054.6,2495.38,6,150,Em Operação
+24,Serra,ESPIRITO SANTO,Estacionamento Privado,376579.56,4069.6,4,100,Em Operação
+25,São Mateus,ESPIRITO SANTO,Supermercado,419884.23,3354.46,3,50,Em Construção
+26,Vitória,ESPIRITO SANTO,Estacionamento Privado,219034.42,2660.65,2,150,Em Operação
+27,Serra,ESPIRITO SANTO,Shopping,407890.62,2212.57,3,100,Em Operação
+28,Serra,ESPIRITO SANTO,Posto de Combustível,367005.77,4647.15,6,100,Em Operação
+29,Domingos Martins,ESPIRITO SANTO,Supermercado,207122.97,2290.79,5,100,Em Operação
+30,Domingos Martins,ESPIRITO SANTO,Shopping,352009.36,4952.5,2,50,Em Operação

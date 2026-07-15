@@ -1,108 +1,197 @@
-import pandas as pd
-import numpy as np
-from faker import Faker
-import random
 from datetime import datetime, timedelta
-import os
+from pathlib import Path
+import random
 
-# Configurando o Faker para o Brasil
-fake = Faker('pt_BR')
+import numpy as np
+import pandas as pd
+import requests
+from faker import Faker
 
-# Criando o diretório para salvar os CSVs
-os.makedirs('camada_bronze', exist_ok=True)
+# Caminhos relativos ao próprio projeto. Assim, os scripts funcionam mesmo
+# quando são executados a partir de outra pasta.
+BASE_DIR = Path(__file__).resolve().parent
+BRONZE_DIR = BASE_DIR / "camada_bronze"
+BRONZE_DIR.mkdir(exist_ok=True)
 
-print("Iniciando a geração de dados fake para o Fundo de Eletropostos...")
+# Semente fixa para que a geração fake seja reproduzível.
+SEMENTE = 42
+random.seed(SEMENTE)
+np.random.seed(SEMENTE)
+Faker.seed(SEMENTE)
+fake = Faker("pt_BR")
 
-# 1. Cadastro do Fundo
-fundo_data = {
-    'id_fundo': [1],
-    'nome_fundo': ['Banestes Infra EV ESG FII'],
-    'taxa_administracao': [0.015], # 1.5% ao ano
-    'benchmark': ['IPCA + 6%'],
-    'data_inicio': ['2023-01-01']
-}
-df_fundo = pd.DataFrame(fundo_data)
-df_fundo.to_csv('camada_bronze/dim_fundo.csv', index=False)
+UF_ES = "ESPIRITO SANTO"
 
-# 2. Projetos de Eletropostos (No Espírito Santo)
-municipios_es = ['Vitória', 'Vila Velha', 'Serra', 'Cariacica', 'Linhares', 'Cachoeiro de Itapemirim', 'Guarapari', 'Colatina', 'Aracruz', 'São Mateus']
-tipos_local = ['Shopping', 'Posto de Combustível', 'Rodovia', 'Supermercado', 'Estacionamento Privado']
+# Municípios reais do Espírito Santo usados nos dados internos simulados.
+# Os pesos deixam a distribuição mais concentrada na Grande Vitória e em
+# municípios economicamente maiores, sem impedir o aparecimento dos demais.
+MUNICIPIOS_ES = [
+    "Vitória", "Vila Velha", "Serra", "Cariacica", "Viana", "Guarapari",
+    "Fundão", "Domingos Martins", "Santa Teresa", "Aracruz", "Linhares",
+    "Colatina", "São Mateus", "Nova Venécia", "Barra de São Francisco",
+    "Cachoeiro de Itapemirim", "Castelo", "Alegre", "Marataízes",
+    "Itapemirim", "Anchieta", "Piúma", "Venda Nova do Imigrante",
+    "Santa Maria de Jetibá", "Afonso Cláudio", "Conceição da Barra",
+    "Jaguaré", "Ibiraçu", "João Neiva", "Mimoso do Sul"
+]
+PESOS_MUNICIPIOS = [
+    12, 14, 14, 11, 4, 6, 2, 3, 2, 5, 7, 6, 5, 3, 2,
+    7, 2, 2, 3, 3, 3, 2, 3, 3, 2, 2, 2, 2, 2, 2
+]
 
+
+def escolher_municipio():
+    return random.choices(MUNICIPIOS_ES, weights=PESOS_MUNICIPIOS, k=1)[0]
+
+
+print("Iniciando a ingestão e geração da Camada Bronze...")
+
+# 1. Cadastro do fundo
+pd.DataFrame({
+    "id_fundo": [1],
+    "nome_fundo": ["Banestes Infra EV ESG FII"],
+    "taxa_administracao": [0.015],
+    "benchmark": ["IPCA + 6%"],
+    "data_inicio": ["2023-01-01"]
+}).to_csv(BRONZE_DIR / "dim_fundo.csv", index=False)
+
+# 2. Projetos de eletropostos
+# A coluna UF já nasce com o padrão esperado pelo projeto.
+tipos_local = [
+    "Shopping", "Posto de Combustível", "Rodovia",
+    "Supermercado", "Estacionamento Privado"
+]
 projetos = []
-for i in range(1, 21): # 20 projetos
+for id_projeto in range(1, 31):
+    status = random.choices(
+        ["Em Operação", "Em Construção"], weights=[0.8, 0.2], k=1
+    )[0]
     projetos.append({
-        'id_projeto': i,
-        'municipio': random.choice(municipios_es),
-        'tipo_local': random.choice(tipos_local),
-        'capex': round(random.uniform(150000, 450000), 2), # Custo de implantação
-        'opex_mensal': round(random.uniform(2000, 5000), 2), # Custo operacional
-        'qtd_carregadores': random.randint(2, 6),
-        'potencia_instalada_kw': random.choice([50, 100, 150]),
-        'status': random.choices(['Em Operação', 'Em Construção'], weights=[0.8, 0.2])[0]
+        "id_projeto": id_projeto,
+        "municipio": escolher_municipio(),
+        "uf": UF_ES,
+        "tipo_local": random.choice(tipos_local),
+        "capex": round(random.uniform(150_000, 450_000), 2),
+        "opex_mensal": round(random.uniform(2_000, 5_000), 2),
+        "qtd_carregadores": random.randint(2, 6),
+        "potencia_instalada_kw": random.choice([50, 100, 150]),
+        "status": status
     })
+
 df_projetos = pd.DataFrame(projetos)
-df_projetos.to_csv('camada_bronze/dim_projetos.csv', index=False)
+df_projetos.to_csv(BRONZE_DIR / "dim_projetos.csv", index=False)
 
-
-# 3. Cotistas do Fundo
+# 3. Cotistas do fundo
+# Não usamos Faker.city(), pois ele gerava nomes que pareciam sobrenomes.
+perfis = ["Conservador", "Moderado", "Arrojado"]
 cotistas = []
-perfis = ['Conservador', 'Moderado', 'Arrojado']
-for i in range(1, 151): # 150 cotistas
+for _ in range(150):
     cotistas.append({
-        'id_cotista': fake.unique.random_int(min=1000, max=9999),
-        'perfil_risco': random.choices(perfis, weights=[0.2, 0.5, 0.3])[0],
-        'municipio_origem': fake.city(),
-        'data_entrada': fake.date_between(start_date='-2y', end_date='today'),
-        'valor_investido': round(random.uniform(5000, 150000), 2)
+        "id_cotista": fake.unique.random_int(min=1000, max=9999),
+        "perfil_risco": random.choices(
+            perfis, weights=[0.2, 0.5, 0.3], k=1
+        )[0],
+        "municipio_origem": escolher_municipio(),
+        "uf": UF_ES,
+        "data_entrada": fake.date_between(start_date="-2y", end_date="today"),
+        "valor_investido": round(random.uniform(5_000, 150_000), 2)
     })
-df_cotistas = pd.DataFrame(cotistas)
-df_cotistas.to_csv('camada_bronze/dim_cotistas.csv', index=False)
 
+pd.DataFrame(cotistas).to_csv(BRONZE_DIR / "dim_cotistas.csv", index=False)
 
-# 4. Rentabilidade Mensal do Fundo 
-datas_rentabilidade = pd.date_range(start='2023-01-01', end=datetime.today(), freq='ME')
+# 4. Rentabilidade mensal do fundo
+# ME = último dia de cada mês.
+datas_rentabilidade = pd.date_range(
+    start="2023-01-01", end=datetime.today(), freq="ME"
+)
 rentabilidade = []
-cota_atual = 100.00
-pl_atual = 15000000.00 # 15 Milhões
+cota_atual = 100.0
+pl_atual = 15_000_000.0
 
 for data in datas_rentabilidade:
-    variacao = random.uniform(-0.01, 0.025) # Variação entre -1% e +2.5% ao mês
-    cota_atual = cota_atual * (1 + variacao)
-    pl_atual = pl_atual * (1 + variacao) + random.uniform(50000, 200000) # Simula novos aportes
-    
+    variacao = random.uniform(-0.01, 0.025)
+    aporte_liquido = random.uniform(50_000, 200_000)
+    cota_atual *= 1 + variacao
+    pl_atual = pl_atual * (1 + variacao) + aporte_liquido
+
     rentabilidade.append({
-        'id_fundo': 1,
-        'data_referencia': data.strftime('%Y-%m-%d'),
-        'valor_cota': round(cota_atual, 2),
-        'patrimonio_liquido': round(pl_atual, 2),
-        'rentabilidade_mes': round(variacao, 4)
+        "id_fundo": 1,
+        "data_referencia": data.strftime("%Y-%m-%d"),
+        "valor_cota": round(cota_atual, 2),
+        "patrimonio_liquido": round(pl_atual, 2),
+        # Entradas menos saídas de recursos dos cotistas no mês.
+        # O campo permite separar crescimento por captação de crescimento
+        # causado pela rentabilidade do fundo.
+        "aporte_liquido_mes": round(aporte_liquido, 2),
+        "rentabilidade_mes": round(variacao, 4)
     })
-df_rentabilidade = pd.DataFrame(rentabilidade)
-df_rentabilidade.to_csv('camada_bronze/fato_rentabilidade.csv', index=False)
 
-# 5. Operações de Recarga (Fato)
-# Gera cerca de 5000 transações de recarga no último ano
-projetos_ativos = df_projetos[df_projetos['status'] == 'Em Operação']['id_projeto'].tolist()
-modelos_veiculos = ['BYD Dolphin', 'BYD Seal', 'Volvo XC40', 'GWM Ora', 'Nissan Leaf', 'Porsche Taycan', 'Renault Kwid E-Tech']
+pd.DataFrame(rentabilidade).to_csv(
+    BRONZE_DIR / "fato_rentabilidade.csv", index=False
+)
 
+# 5. Operações de recarga
+# A hora é sorteada diretamente para evitar horários fora do intervalo 06h-23h.
+projetos_ativos = df_projetos.loc[
+    df_projetos["status"] == "Em Operação", "id_projeto"
+].tolist()
+modelos_veiculos = [
+    "BYD Dolphin", "BYD Seal", "Volvo EX30", "GWM Ora 03",
+    "Nissan Leaf", "Porsche Taycan", "Renault Kwid E-Tech"
+]
 operacoes = []
-data_inicio_op = datetime.now() - timedelta(days=365)
+data_inicial = datetime.now().date() - timedelta(days=365)
 
-for _ in range(5000):
-    data_recarga = data_inicio_op + timedelta(days=random.randint(0, 365), hours=random.randint(6, 23), minutes=random.randint(0, 59))
+for _ in range(8_000):
+    dia = data_inicial + timedelta(days=random.randint(0, 365))
+    data_recarga = datetime.combine(
+        dia,
+        datetime.min.time()
+    ) + timedelta(
+        hours=random.randint(6, 23),
+        minutes=random.randint(0, 59),
+        seconds=random.randint(0, 59)
+    )
     energia_kwh = round(random.uniform(10, 60), 2)
-    preco_kwh = 2.10 # R$ 2,10 por kWh
-    
-    operacoes.append({
-        'id_operacao': fake.unique.uuid4(),
-        'id_projeto': random.choice(projetos_ativos),
-        'data_hora': data_recarga.strftime('%Y-%m-%d %H:%M:%S'),
-        'veiculo_modelo': random.choice(modelos_veiculos),
-        'energia_consumida_kwh': energia_kwh,
-        'tempo_utilizacao_min': random.randint(20, 120),
-        'receita_gerada_brl': round(energia_kwh * preco_kwh, 2)
-    })
-df_operacoes = pd.DataFrame(operacoes)
-df_operacoes.to_csv('camada_bronze/fato_operacoes_recarga.csv', index=False)
+    preco_kwh = random.choice([1.99, 2.10, 2.29, 2.49])
 
-print("✅ Dados gerados com sucesso na pasta 'camada_bronze'!")
+    operacoes.append({
+        "id_operacao": fake.unique.uuid4(),
+        "id_projeto": random.choice(projetos_ativos),
+        "data_hora": data_recarga.strftime("%Y-%m-%d %H:%M:%S"),
+        "veiculo_modelo": random.choice(modelos_veiculos),
+        "energia_consumida_kwh": energia_kwh,
+        "tempo_utilizacao_min": random.randint(20, 120),
+        "preco_kwh_brl": preco_kwh,
+        "receita_gerada_brl": round(energia_kwh * preco_kwh, 2)
+    })
+
+pd.DataFrame(operacoes).to_csv(
+    BRONZE_DIR / "fato_operacoes_recarga.csv", index=False
+)
+
+# 6. Ingestão bruta da Selic
+# A Bronze guarda os campos exatamente como chegam da API. O tratamento e a
+# mudança de nomes ficam exclusivamente no script da Silver.
+url_bcb = "https://api.bcb.gov.br/dados/serie/bcdata.sgs.4390/dados?formato=json"
+caminho_selic_bruta = BRONZE_DIR / "selic_bcb_bruta.csv"
+
+try:
+    resposta = requests.get(url_bcb, timeout=30)
+    resposta.raise_for_status()
+    pd.DataFrame(resposta.json()).to_csv(caminho_selic_bruta, index=False)
+    print("- Selic bruta obtida da API do Banco Central.")
+except Exception as erro:
+    if caminho_selic_bruta.exists():
+        print(f"- API da Selic indisponível; arquivo Bronze existente mantido: {erro}")
+    else:
+        print(f"- Não foi possível obter a Selic: {erro}")
+
+# O arquivo da SENATRAN é uma fonte externa bruta fornecida manualmente.
+caminho_senatran = BRONZE_DIR / "frota_senatran_bruta.xlsx"
+if caminho_senatran.exists():
+    print("- Arquivo bruto da SENATRAN localizado na Camada Bronze.")
+else:
+    print("- Atenção: inclua frota_senatran_bruta.xlsx na Camada Bronze.")
+
+print("Camada Bronze gerada com sucesso.")
