@@ -439,7 +439,7 @@ if arquivo.exists():
         df_selic["valor"].astype(str).str.replace(",", ".", regex=False),
         errors="coerce"
     )
-    df_selic = df_selic[df_selic["data"] >= "2023-01-01"].copy()
+    df_selic = df_selic[df_selic["data"] >= "2024-07-01"].copy()
     df_selic = df_selic.rename(columns={
         "data": "data_referencia",
         "valor": "taxa_selic_mes"
