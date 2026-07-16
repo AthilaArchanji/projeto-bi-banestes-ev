@@ -33,10 +33,36 @@ def ler_silver(nome_arquivo, colunas_obrigatorias=None):
     return df
 
 
+def padronizar_municipios_gold(df):
+    """Padroniza os campos de município para uso geográfico no BI."""
+    df_saida = df.copy()
+    colunas_municipio = [
+        "municipio",
+        "municipio_origem",
+        "municipio_eletroposto",
+        "municipio_origem_veiculo",
+        "municipio_maior_oportunidade"
+    ]
+
+    for coluna in colunas_municipio:
+        if coluna in df_saida.columns:
+            df_saida[coluna] = df_saida[coluna].apply(
+                lambda valor: (
+                    f"{str(valor).split(',')[0].strip().upper()} "
+                    ", ESPIRITO SANTO, BRASIL"
+                    if pd.notna(valor)
+                    else valor
+                )
+            )
+
+    return df_saida
+
+
 def salvar_gold(df, nome_arquivo):
     caminho = GOLD_DIR / nome_arquivo
-    df.to_csv(caminho, index=False)
-    print(f"- {nome_arquivo}: {len(df)} registros")
+    df_saida = padronizar_municipios_gold(df)
+    df_saida.to_csv(caminho, index=False)
+    print(f"- {nome_arquivo}: {len(df_saida)} registros")
 
 
 def divisao_segura(numerador, denominador):

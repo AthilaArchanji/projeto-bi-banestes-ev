@@ -5,4 +5,4 @@ dim_projetos,30,30,0,"Municípios validados pela SENATRAN; investimento, infraes
 dim_cotistas,150,150,0,"Municípios de origem validados pela SENATRAN; UF, datas e valores padronizados"
 fato_movimentacao_fundo,42,42,0,Datas e aportes líquidos convertidos; medidas de rentabilidade reservadas à Gold
 fato_operacoes_recarga,220000,220000,0,"Origem e localização ligadas a municípios da SENATRAN; datas, custo, margem e origem local criados"
-ext_selic,480,43,437,Fonte bruta do BCB filtrada a partir de 2023
+ext_selic,480,31,449,Fonte bruta do BCB filtrada a partir de 2024
