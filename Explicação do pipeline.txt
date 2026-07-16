@@ -1,117 +1,45 @@
 CAMADA BRONZE
 
-.Biblioteca Numpy para gerara valores aleatórios
-.Biblioteca Pandas para trabalhar com as bases de dados em tabelas
-.Bibliotaca Fafer para gerar ids aleatórios
+A camada Bronze, implementada em 01_ingestao_bronze.py, usa numpy para gerar valores aleatórios, pandas para estruturar as tabelas, requests para buscar a Selic na API do Banco Central e Faker para criar identificadores e datas simuladas. O pipeline separa os dados em pastas próprias para Bronze, Silver e Gold e começa carregando a base bruta da SENATRAN, que é normalizada apenas para servir de referência à simulação, sem sobrescrever a fonte original em Excel. A partir dessa base, ele filtra os registros do Espírito Santo e mantém apenas veículos recarregáveis, consolidando a frota elétrica e híbrida plug-in por município. Em seguida, gera um índice de demanda municipal com base na participação da frota local em relação ao maior município, aplicando raiz quadrada para reduzir a distância entre cidades maiores e menores.
 
-.Separação dos dados bronze, silver e gold em pastas
-.Carrega fonte do senatran
-.Normalização dos textos dos dados do SENATRAN
-    .Necessário fazer isso na camada bronze para gerar os dados
-    .Mas não sobrescreve os dados da bronze
-.Filtragem dos dados do SENATRAN para pegar apenas dados do ES para as categorias de veículo carregáveis em eletropostos
-.Geração de um índice de demanda por município baseado na fração da frota do município em relação com a maior frota entre os municípios
-    .Tira raíz quadrada dessa proporção pra diminuir a distância entre as grandes cidades e as menores
+Na geração dos projetos de eletropostos, o pipeline cria 30 projetos, garantindo presença em pelo menos 12 municípios com maior frota recarregável e distribuindo os demais com peso crescente para municípios com maior demanda. Os tipos de local são escolhidos de forma aleatória, mas ponderada: para municípios com maior índice de demanda, prevalecem perfis urbanos como Shopping, Supermercado, Estacionamento Privado, Posto de Combustível e Rodovia, enquanto em municípios com menor demanda os perfis rodoviários ganham mais peso. Cada projeto recebe status de "Em Operação" ou "Em Construção", quantidade de carregadores, potência instalada, custo de construção proporcional, custo de operação mensal estimado e demanda mensal estimada de recargas.
 
-.Geração dos projetos de eletropostos
-    .30 projetos
-    .projetos garantidos para pelo menos 12 municípios
-    .Mais projetos previstos para municípios com maior parcela de veículos
-    .Tipos de postos aleatórios entre tipos urbanos ("Shopping", "Supermercado", "Estacionamento Privado",
-    "Posto de Combustível", "Rodovia") para municípios com índices de demanda mais altos e rodoviários (Posto de Combustível", "Rodovia", "Supermercado", "Estacionamento Privado", "Shopping") para municípios com índice de demanda mais baixo
-    .Projeto pode estar em operação ou em construção
-    .Cada projeto tem uma capacidade aleatória de kW  e um custo proporcional
-    
-.Geração dos cotistas
-    .Maior concentração de cotistas nos municípios com maior demanda
-    .3 perfis de cotista (Conservador, Moderado e Arrojado) que estão dispostos a investir valores diferentes
-        .Distribuição ponderada dos perfis (20% conservador, 50% moderado e 30% arrojado)
+A geração dos cotistas também é orientada pela demanda real da frota, concentrando mais cotistas nos municípios com maior presença de veículos recarregáveis. O pipeline cria três perfis de risco, Conservador, Moderado e Arrojado, com distribuição ponderada de 20%, 50% e 30%, respectivamente, e associa cada perfil a faixas diferentes de valor investido. Já as movimentações do fundo são criadas como aportes mensais brutos, preservando apenas o fato de entrada de capital na Bronze, sem calcular rentabilidade, cota ou patrimônio nessa etapa.
 
-.Geração de movimentações dos fundos
-
-.Geração de operações de recarga
-    .Total de recargas considerando uma média de 1 recarga a cada 2 semanas por veículo elétrico (~220000 recargas)
-    .Apenas nos projetos ativos (exclui projetos em construção)
-    .Recargas concentradas eletropostos de municípios com mais eletropostos ativos
-        .Pesos por estação inversamente proporcionais ao número de estações no município, e diretamente proporcionais à frota de veículos elétricos
-    .Horários das recargas geradas aleatoriamente com pesos ponderados  (mais recargas no meio da manhã e no fim da tarde)
-    .Carga total em kWh variável de acordo com o tipo de veículo
-    . Preço base de 1,50 por kWh
-
-.Taxa selic trazida de fonte externa para os meses considerados
+Na geração das operações de recarga, o pipeline simula 220 mil recargas, considerando apenas projetos ativos, equivalente a uma média de 1 recarga a cada 2 semanas por veículo recarregável no Estado. A distribuição das recargas é ponderada pela frota recarregável do município, pela quantidade de carregadores e pela concentração de projetos no município, de modo que cidades com mais veículos elétricos e mais estações recebem maior volume de operações. As sessões são distribuídas por hora com pesos que concentram maior movimento no meio da manhã e no fim da tarde, a origem do veículo é majoritariamente local, e o tipo do veículo define a carga em kWh e a potência efetiva usada no cálculo do tempo. O preço por kWh parte de uma base de 1,50 e é ajustado de acordo com a potência instalada do projeto. Por fim, a Selic é obtida da fonte externa do Banco Central e salva em sua forma bruta para tratamento posterior na camada Silver.
 
 
 
 CAMADA SILVER
 
-.Normalização de texto para remover acentos, espaços duplicados e padronizar em letras maiúsculan para processar dados
-.Converter o nome do estado "ES" para "ESPIRITO SANTO" para bater com a base de dados do SENATRAN
-.Para cada base de dados, verificar se as colunas relevantes estão realmente presentes (evitar erros)
+A camada Silver, implementada em 02_tratamento_silver.py, faz a limpeza, padronização e validação das bases da Bronze antes de qualquer análise. O primeiro passo é normalizar textos para remover acentos, espaços duplicados e padronizar tudo em maiúsculas, além de converter ES e variações para ESPIRITO SANTO, garantindo compatibilidade entre as fontes. O pipeline também valida a existência das colunas obrigatórias em cada tabela, evitando que erros de estrutura avancem para etapas posteriores.
 
-.Ajustes na base de dados do SENATRAN:
-    .Renomeação das colunas
-    .Normalização dos textos
-    .Conversão de quantidade de veículos em valores numéricos
-        .Campos vazios preenchidos com 0
-    .Filtragem dos dados relativos apenas ao Estado do Espírito Santo
-    .Filtragem dos dados apenas sobre veículos recarregáveis
-    .Criação de um índice de demanda para cada município
-        .Índice de demanda calculado como: sqrt(frota de veículos elétricos do município / frota de veículos elétricos do município com a maior frota de veículos elétricos) * 100
-    .Demanda classificada em "MUITO ALTA", "ALTA", "MÉDIA" ou "BAIXA" dependendo da faixa do índice de demanda
-        .70 ou maior - MUITO ALTA
-        .40 ou maior - ALTA
-        .15 ou maior - MÉDIA
-        .Até 15 - BAIXA
-        ."SEM FROTA RECARREGÁVEL" para municípios sem veículos elétricos
+No tratamento da base da SENATRAN, o processo renomeia colunas, normaliza textos, converte a quantidade de veículos para numérico e filtra apenas os registros do Espírito Santo e apenas os veículos recarregáveis. Com isso, a base Silver deriva uma frota consolidada por município, separando frota elétrica e híbrida plug-in, calculando a frota recarregável total, a participação da frota no estado, o índice de demanda do município e sua classificação em MUITO ALTA, ALTA, MÉDIA, BAIXA ou SEM FROTA RECARREGÁVEL. Esse índice é o mesmo princípio usado na Bronze para orientar a simulação dos projetos e depois na Gold para priorização de investimento.
 
-.Ajustes na base de dados do fundo de investimento:
-    .Retirada de linhas duplicadas (desnecessário já que se trata de um fundo só, mas é prática comum)
-    .Padronização dos campos de texto
-    .Conversão da coluna "data_inicio" para tipo DateTime
-    .Conversão da coluna "taxa_administracao" para tipo numérico"
-    .Retirada de linhas com valores inválidos
+No tratamento da dimensão do fundo, o pipeline remove duplicidades, padroniza os campos textuais, converte data_inicio para DateTime, transforma taxa_administracao em numérico e descarta registros inválidos. Nos projetos, ele elimina duplicidades, normaliza município e status, converte a data de início da operação para DateTime, converte as colunas numéricas e filtra apenas projetos do Espírito Santo, com município válido na base da SENATRAN, custo de construção positivo, custo de operação positivo e pelo menos um carregador. Além disso, compara a frota de referência armazenada na simulação com a frota atual do SENATRAN e registra a diferença, criando um controle de consistência da premissa usada na geração dos dados.
 
-.Ajustes na base de dados de projetos:
-    .Retirada de colunas duplicadas
-    .Padronização de campos de texto
-    .Normalização de campo de UF
-    .Conversão de campo "data_inicio_operação" para tipo DateTime
-    .Conversão das (várias) colunas numéricas para tipo numérico
-    .Filtragem dos projetos por projetos dos municípios do ES, que tenham pelo menos um carregador e cujo município tenha pelo menos um veículo elétrico
+Na base de cotistas, a Silver remove duplicidades, padroniza município e UF, converte data_entrada para DateTime, transforma valor_investido em numérico e mantém apenas linhas válidas do Espírito Santo, com município existente no SENATRAN e valores positivos. Na base de movimentações do fundo, o tratamento faz a mesma lógica de limpeza: remove duplicadas, converte data_referencia para DateTime, transforma aporte_liquido_mes em numérico e elimina linhas inválidas, preservando somente os aportes brutos.
 
-.Ajustes na base de dados de cotistas:
-    .Retirada de linhas duplicadas
-    .Normalização dos campos de texto
-    .Normalização do nome do Estado do Espírito Santo
-    .Conversão da coluna "data_entrada" para tipo DateTime
-    .Conversão da coluna "valor_investido" para numérico
-    .Retirada de linhas com valores inválidos
+O pipeline de base de operações de recarga remove duplicidades, converte data_hora para DateTime, normaliza texto, padroniza a UF, converte as colunas numéricas para tipo numérico e mantém apenas registros válidos, com projeto existente, data válida, município de origem válido, UF do Espírito Santo, tipo de veículo recarregável permitido e consumo e receita positivos. Depois disso, ele adiciona a localização do eletroposto com base no projeto, deriva data_referencia, ano_mes, hora_recarga e dia_semana, cria a flag de origem_local comparando município de origem e município do eletroposto, calcula custo_energia_brl assumindo custo médio de 90 centavos por kWh e calcula margem_bruta_brl como receita menos custo de energia.
 
-.Ajustes na base de dados de movimentações de fundo:
-    .Normalização dos cmapos de texto
-    .Retirada de linhas duplicadas
-    .Conversão da coluna "data_referencia" para tipo DateTime
-    .Conversão da coluna "aporte_liquido_mes" para tipo numérico
-    .Retirada de linhas com valores inválidos
+Por fim, a base da Selic também é tratada na Silver: o pipeline normaliza os campos, converte data para DateTime, converte valor para numérico substituindo vírgula por ponto, renomeia os campos para data_referencia e taxa_selic_mes, filtra a série a partir de janeiro de 2024 e descarta valores inválidos. Em paralelo, o processo grava um controle de qualidade com o número de registros de entrada, saída e removidos em cada tabela, o que documenta formalmente a transformação aplicada em toda a camada.
 
-.Ajustes na base de dados de recargas:
-    .Retirada de linhas duplicadas
-    .Conversão da coluna "data_hora" para DateTime
-    .Normalização dos campos de texto
-    .Normalização do nome do Estado do Espírito Santo
-    .Conversão das (várias) colunas numéricas para tipo numérico
-    .Retirada de linhas com valores inválidos
-    .Adição de informações sobre a localização do eletroposto onde foi feita a recarga
-    .Divisão da coluna de "data_hora" da recarga em várias columas ("hora_recarga", "dia_recarga", "ano_mes") para auxiliar na agregação dos dados na camada gold
-    .Criação da coluna "custo_energia_brl" com o custo de cada recarga (considerando uma média de 90 centavos por kWh)
-    .Criação da coluna "margem_bruta_brl" com a margem de lucro de cada recarga
-    
-.Ajustes na base de dados da taxa SELIC:
-    .Normalização dos campos de texto
-    .Conversão da coluna "data" para tipo DateTime
-    .Conversão da coluna "valor" para tipo numérico
-    .Substituição do separador decimal de vírgula para ponto
-    .Colunas "data" e "valor" renomeadas para "data_referencia" e "valor_selic_mes", respectivamente
-    .Filtragem dos valores da taxa selic a partir de Janeiro de 2024
-    .Retirada de linhas com valores inválidos
 
+
+CAMADA GOLD
+
+A etapa de criação de análise de viabilidade por município combina a frota recarregável da base da Senatran com os projetos implantados e com o histórico de operações de recarga. A partir disso, o pipeline agrega por município os principais sinais de oferta e demanda: quantidade total de projetos, quantidade de projetos em construção, quantidade de projetos em operação, custo de construção total, custo de operação mensal total, quantidade de carregadores, potência instalada total e demanda mensal estimada de recargas. Na camada de operações, consolida quantidade de recargas, meses com operação, energia total recarregada, receita total, margem bruta total e recargas originadas de veículos do mesmo município do eletroposto. Com essas bases, calcula razões como veículos por projeto, veículos por carregador, média mensal de recargas, recargas por 100 veículos, receita por veículo, percentual de recargas de origem local e percentual de atingimento da demanda esperada. Em seguida, deriva o índice de déficit de infraestrutura, que penaliza municípios com muita frota e poucos carregadores, gera scores percentuais para frota, déficit e demanda observada, e combina esses três componentes no índice de oportunidade de investimento com pesos de 45%, 35% e 20%, respectivamente. A partir desse índice, o pipeline também classifica a existência de projetos, define prioridade de expansão e recomendações de investimento,gerando a saída final em gold_oportunidade_municipios.csv.
+
+A etapa de desempenho consolidado dos projetos parte das operações de recarga agrupadas por projeto e consolida o comportamento econômico e operacional de cada unidade. O pipeline soma quantidade de recargas, energia total fornecida, tempo total de utilização, receita total, custo total de energia, margem bruta total, ticket médio, energia média por recarga, tempo médio de recarga, meses com operação e recargas de origem local. Depois, junta essas medidas à dimensão de projetos e complementa a análise com métricas derivadas: margem bruta percentual, receita por carregador, média mensal de recargas, atingimento da demanda estimada, percentual de recargas de origem local, custo de operação do período, margem de lucro após o custo de operação e retorno operacional sobre o custo de construção. É gerado um rótulo legível do projeto, ordenado por receita total e exportado em gold_desempenho_projetos.csv. Essa etapa responde às perguntas sobre quais projetos geram mais receita, mais margem e mais energia..
+
+A etapa de evolução mensal das recargas organiza todas as operações por mês e produz uma visão temporal do uso da rede. O pipeline consolida quantidade de recargas, projetos com movimento, municípios com movimento, energia total, receita total, custo total de energia, margem bruta total e ticket médio por mês. Em seguida, cria a coluna data_mes para facilitar séries temporais e calcula a margem bruta percentual mensal. O resultado é salvo em gold_operacoes_mensais.csv, servindo de base para a leitura da evolução do volume de recargas ao longo do tempo.
+
+A etapa de demanda por horário agrupa as operações pelo horário de recarga e mede como a demanda se distribui ao longo do dia. O pipeline soma quantidade de recargas, energia total, receita total e tempo médio de recarga por hora, além de criar uma faixa horária formatada no padrão HH:00. A tabela final é ordenada do menor para o maior horário e exportada em gold_demanda_horaria.csv. Essa saída responde diretamente à pergunta sobre quais horários concentram maior demanda.
+
+A etapa de origem municipal da demanda identifica de quais municípios partem os veículos que utilizam os eletropostos. O pipeline agrupa as operações pelo município, consolidando quantidade de recargas originadas, energia total e receita associada. Depois, faz o merge com a frota recarregável do município de origem e calcula a participação percentual dessas recargas no total e a métrica de recargas por 100 veículos. A base final é ordenada pela quantidade de recargas originadas e exportada como gold_origem_recargas_municipios.csv.
+
+A etapa de distribuição dos cotistas usa a dimensão de cotistas para entender como o capital está distribuído geograficamente e por perfil de risco. O pipeline agrupa os cotistas por UF, município de origem e perfil de risco, consolidando quantidade de cotistas, valor total investido e investimento médio. Em seguida, calcula a participação dos cotistas no total e a participação do investimento no total, ordena o resultado pelo valor investido e grava a saída em gold_cotistas_municipio_perfil.csv. Essa tabela responde à pergunta sobre distribuição dos cotistas por município e perfil.
+
+A etapa de rentabilidade consolidada do fundo e comparação com a Selic cruza a movimentação do fundo, a série histórica da Selic e a dimensão do fundo, normaliza datas e cria uma janela mensal para análise. A partir daí, consolida por mês os projetos em operação e calcula o lucro mensal dos projetos ativos, considerando receita, custo de energia, margem bruta, custo de operação e lucro operacional por projeto. O pipeline assume apenas projetos em operação com data de início válida e considera que o custo operacional incide desde o início da operação, mesmo em meses sem recarga, para evitar superestimação do lucro. Com essa base, calcula a rentabilidade mensal do fundo usando o lucro operacional dos projetos, a taxa administrativa mensal equivalente, o capital base do mês anterior e os aportes líquidos do período. Em seguida, gera o valor da cota, o patrimônio líquido e a rentabilidade mensal em percentual. Depois, faz o merge com a Selic mensal e calcula retorno excedente percentual, indicador de superação da Selic, retorno do fundo em reais, retorno equivalente da Selic em reais e retorno excedente em reais. A etapa fecha com os acumulados de rentabilidade do fundo, Selic acumulada, retorno excedente acumulado em pontos percentuais e em reais, meses acima da Selic acumulados e percentual acumulado de meses acima da Selic. Essa parte exporta gold_lucro_projetos_mensal.csv, gold_rentabilidade_fundo.csv, gold_desempenho_fundo_selic.csv e gold_resumo_fundo_selic.csv.
+
+A etapa de resumo executivo geral consolida os principais indicadores para consumo em cartões e painéis gerenciais. O pipeline reúne quantidade de cotistas, valor total investido, quantidade total de projetos, projetos em operação, custo de construção total, quantidade total de recargas, energia total fornecida, receita total de recargas, margem bruta total e frota recarregável do Espírito Santo. Também calcula a correlação entre frota recarregável e recargas por município e usa o município com maior índice de oportunidade como destaque do resumo. O resultado final é exportado em gold_resumo_executivo.csv.
