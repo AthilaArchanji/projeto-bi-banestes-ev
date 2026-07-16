@@ -482,7 +482,7 @@ for _, projeto in projetos_ativos.iterrows():
         )
         tempo_min = int(np.clip(tempo_min, 15, 150))
 
-        preco_base = 2.00 + projeto["potencia_instalada_kw"] / 300
+        preco_base = 1.5 + projeto["potencia_instalada_kw"] / 300
         preco_kwh = round(
             preco_base + random.choice([0.00, 0.10, 0.20, 0.30]), 2
         )
