@@ -439,7 +439,7 @@ if arquivo.exists():
         df_selic["valor"].astype(str).str.replace(",", ".", regex=False),
         errors="coerce"
     )
-    df_selic = df_selic[df_selic["data"] >= "2024-07-01"].copy()
+    df_selic = df_selic[df_selic["data"] >= "2024-01-01"].copy()
     df_selic = df_selic.rename(columns={
         "data": "data_referencia",
         "valor": "taxa_selic_mes"
@@ -454,7 +454,7 @@ if arquivo.exists():
         "ext_selic",
         entrada,
         len(df_selic),
-        "Fonte bruta do BCB filtrada a partir de 2023"
+        "Fonte bruta do BCB filtrada a partir de 2024"
     )
     print("- ext_selic tratada.")
 else:
