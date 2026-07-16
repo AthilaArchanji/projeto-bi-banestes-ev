@@ -1,0 +1,41 @@
+CAMADA BRONZE
+
+.Biblioteca Numpy para gerara valores aleatórios
+.Biblioteca Pandas para trabalhar com as bases de dados em tabelas
+.Bibliotaca Fafer para gerar ids aleatórios
+
+.Separação dos dados bronze, silver e gold em pastas
+.Carrega fonte do senatran
+.Normalização dos textos dos dados do SENATRAN
+    .Necessário fazer isso na camada bronze para gerar os dados
+    .Mas não sobrescreve os dados da bronze
+.Filtragem dos dados do SENATRAN para pegar apenas dados do ES para as categorias de veículo carregáveis em eletropostos
+.Geração de um índice de demanda por município baseado na fração da frota do município em relação com a maior frota entre os municípios
+    .Tira raíz quadrada dessa proporção pra diminuir a distância entre as grandes cidades e as menores
+
+.Geração dos projetos de eletropostos
+    .30 projetos
+    .projetos garantidos para pelo menos 12 municípios
+    .Mais projetos previstos para municípios com maior parcela de veículos
+    .Tipos de postos aleatórios entre tipos urbanos ("Shopping", "Supermercado", "Estacionamento Privado",
+    "Posto de Combustível", "Rodovia") para municípios com índices de demanda mais altos e rodoviários (Posto de Combustível", "Rodovia", "Supermercado", "Estacionamento Privado", "Shopping") para municípios com índice de demanda mais baixo
+    .Projeto pode estar em operação ou em construção
+    .Cada projeto tem uma capacidade aleatória de kW  e um custo proporcional
+    
+.Geração dos cotistas
+    .Maior concentração de cotistas nos municípios com maior demanda
+    .3 perfis de cotista (Conservador, Moderado e Arrojado) que estão dispostos a investir valores diferentes
+        .Distribuição ponderada dos perfis (20% conservador, 50% moderado e 30% arrojado)
+
+.Geração de movimentações dos fundos
+
+.Geração de operações de recarga
+    .Total de recargas considerando uma média de 1 recarga a cada 2 semanas por veículo elétrico (~220000 recargas)
+    .Apenas nos projetos ativos (exclui projetos em construção)
+    .Recargas concentradas eletropostos de municípios com mais eletropostos ativos
+        .Pesos por estação inversamente proporcionais ao número de estações no município, e diretamente proporcionais à frota de veículos elétricos
+    .Horários das recargas geradas aleatoriamente com pesos ponderados  (mais recargas no meio da manhã e no fim da tarde)
+    .Carga total em kWh variável de acordo com o tipo de veículo
+    . Preço base de 1,50 por kWh
+
+.Taxa selic trazida de fonte externa para os meses considerados
