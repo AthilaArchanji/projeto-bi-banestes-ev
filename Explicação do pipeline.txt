@@ -39,3 +39,5 @@ CAMADA BRONZE
     . Preço base de 1,50 por kWh
 
 .Taxa selic trazida de fonte externa para os meses considerados
+
+CAMADA SILVER

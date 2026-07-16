@@ -3,6 +3,9 @@ venv/
 env/
 .env
 
+camada_silver/*
+camada_gold/*
+
 # Arquivos temporários do Python e do SO
 __pycache__/
 *.pyc
