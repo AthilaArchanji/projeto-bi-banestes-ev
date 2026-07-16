@@ -1,8 +1,8 @@
 tabela,registros_bronze,registros_silver,registros_removidos,observacao
+ext_senatran_es,58009,78,57931,"UF corrigida; somente elétricos, elétricos com fonte externa e híbridos plug-in; índice de demanda criado"
 dim_fundo,1,1,0,Tipos e chave do fundo validados
-dim_projetos,30,30,0,Município e UF padronizados; valores inválidos removidos
-dim_cotistas,150,150,0,"Município realista, UF, datas e valores padronizados"
-fato_rentabilidade,42,42,0,"Datas, aporte líquido e medidas financeiras convertidos; percentual calculado"
-fato_operacoes_recarga,8000,8000,0,"Chaves validadas; datas, ano-mês, hora, custo e margem criados"
+dim_projetos,30,30,0,"Municípios validados pela SENATRAN; investimento, infraestrutura e premissas de demanda padronizados"
+dim_cotistas,150,150,0,"Municípios de origem validados pela SENATRAN; UF, datas e valores padronizados"
+fato_movimentacao_fundo,42,42,0,Datas e aportes líquidos convertidos; medidas de rentabilidade reservadas à Gold
+fato_operacoes_recarga,220000,220000,0,"Origem e localização ligadas a municípios da SENATRAN; datas, custo, margem e origem local criados"
 ext_selic,480,43,437,Fonte bruta do BCB filtrada a partir de 2023
-ext_senatran_es,58009,78,57931,"UF corrigida; filtro limitado a ELETRICO, ELETRICO/FONTE EXTERNA e HIBRIDO PLUG-IN"
