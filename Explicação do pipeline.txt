@@ -40,4 +40,78 @@ CAMADA BRONZE
 
 .Taxa selic trazida de fonte externa para os meses considerados
 
+
+
 CAMADA SILVER
+
+.Normalização de texto para remover acentos, espaços duplicados e padronizar em letras maiúsculan para processar dados
+.Converter o nome do estado "ES" para "ESPIRITO SANTO" para bater com a base de dados do SENATRAN
+.Para cada base de dados, verificar se as colunas relevantes estão realmente presentes (evitar erros)
+
+.Ajustes na base de dados do SENATRAN:
+    .Renomeação das colunas
+    .Normalização dos textos
+    .Conversão de quantidade de veículos em valores numéricos
+        .Campos vazios preenchidos com 0
+    .Filtragem dos dados relativos apenas ao Estado do Espírito Santo
+    .Filtragem dos dados apenas sobre veículos recarregáveis
+    .Criação de um índice de demanda para cada município
+        .Índice de demanda calculado como: sqrt(frota de veículos elétricos do município / frota de veículos elétricos do município com a maior frota de veículos elétricos) * 100
+    .Demanda classificada em "MUITO ALTA", "ALTA", "MÉDIA" ou "BAIXA" dependendo da faixa do índice de demanda
+        .70 ou maior - MUITO ALTA
+        .40 ou maior - ALTA
+        .15 ou maior - MÉDIA
+        .Até 15 - BAIXA
+        ."SEM FROTA RECARREGÁVEL" para municípios sem veículos elétricos
+
+.Ajustes na base de dados do fundo de investimento:
+    .Retirada de linhas duplicadas (desnecessário já que se trata de um fundo só, mas é prática comum)
+    .Padronização dos campos de texto
+    .Conversão da coluna "data_inicio" para tipo DateTime
+    .Conversão da coluna "taxa_administracao" para tipo numérico"
+    .Retirada de linhas com valores inválidos
+
+.Ajustes na base de dados de projetos:
+    .Retirada de colunas duplicadas
+    .Padronização de campos de texto
+    .Normalização de campo de UF
+    .Conversão de campo "data_inicio_operação" para tipo DateTime
+    .Conversão das (várias) colunas numéricas para tipo numérico
+    .Filtragem dos projetos por projetos dos municípios do ES, que tenham pelo menos um carregador e cujo município tenha pelo menos um veículo elétrico
+
+.Ajustes na base de dados de cotistas:
+    .Retirada de linhas duplicadas
+    .Normalização dos campos de texto
+    .Normalização do nome do Estado do Espírito Santo
+    .Conversão da coluna "data_entrada" para tipo DateTime
+    .Conversão da coluna "valor_investido" para numérico
+    .Retirada de linhas com valores inválidos
+
+.Ajustes na base de dados de movimentações de fundo:
+    .Normalização dos cmapos de texto
+    .Retirada de linhas duplicadas
+    .Conversão da coluna "data_referencia" para tipo DateTime
+    .Conversão da coluna "aporte_liquido_mes" para tipo numérico
+    .Retirada de linhas com valores inválidos
+
+.Ajustes na base de dados de recargas:
+    .Retirada de linhas duplicadas
+    .Conversão da coluna "data_hora" para DateTime
+    .Normalização dos campos de texto
+    .Normalização do nome do Estado do Espírito Santo
+    .Conversão das (várias) colunas numéricas para tipo numérico
+    .Retirada de linhas com valores inválidos
+    .Adição de informações sobre a localização do eletroposto onde foi feita a recarga
+    .Divisão da coluna de "data_hora" da recarga em várias columas ("hora_recarga", "dia_recarga", "ano_mes") para auxiliar na agregação dos dados na camada gold
+    .Criação da coluna "custo_energia_brl" com o custo de cada recarga (considerando uma média de 90 centavos por kWh)
+    .Criação da coluna "margem_bruta_brl" com a margem de lucro de cada recarga
+    
+.Ajustes na base de dados da taxa SELIC:
+    .Normalização dos campos de texto
+    .Conversão da coluna "data" para tipo DateTime
+    .Conversão da coluna "valor" para tipo numérico
+    .Substituição do separador decimal de vírgula para ponto
+    .Colunas "data" e "valor" renomeadas para "data_referencia" e "valor_selic_mes", respectivamente
+    .Filtragem dos valores da taxa selic a partir de Janeiro de 2024
+    .Retirada de linhas com valores inválidos
+
